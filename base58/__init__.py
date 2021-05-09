@@ -1,8 +1,8 @@
-'''Base58 encoding
+"""Base58 encoding
 
 Implementations of Base58 and Base58Check encodings that are compatible
 with the bitcoin network.
-'''
+"""
 
 # This module is based upon base58 snippets found scattered over many bitcoin
 # tools written in python. From what I gather the original source is from a
@@ -11,7 +11,7 @@ with the bitcoin network.
 
 from functools import lru_cache
 from hashlib import sha256
-from typing import Mapping, Union
+from typing import Mapping, Union, Any
 
 __version__ = '2.1.0'
 
@@ -22,7 +22,38 @@ RIPPLE_ALPHABET = b'rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz'
 XRP_ALPHABET = RIPPLE_ALPHABET
 
 # Retro compatibility
-alphabet = BITCOIN_ALPHABET
+ALPHA = BITCOIN_ALPHABET
+
+
+def b58ec(
+        v: Union[int, bytes, str, Any], alphabet: bytes = BITCOIN_ALPHABET
+) -> str:
+    if isinstance(v, int) and v >= 0:
+        return 'i' + b58encode_int(v, alphabet=alphabet).decode('utf-8')
+
+    t = 'b'
+    if not isinstance(v, bytes):
+        t = 's'
+        v = str(v).encode('utf-8')
+
+    return t + b58encode(v, alphabet).decode('utf-8')
+
+
+def b58dc(
+        v: Union[str, bytes], alphabet: bytes = BITCOIN_ALPHABET, *,
+        autofix: bool = False
+) -> [int, bytes, str, None]:
+    try:
+        if v[0:1] == 'i':
+            return b58decode_int(v[1:], alphabet, autofix=autofix)
+
+        dc = b58decode(v[1:], alphabet, autofix=autofix)
+        if v[0:1] == 's':
+            dc = dc.decode('utf-8')
+
+        return dc
+    except Exception:
+        return None
 
 
 def scrub_input(v: Union[str, bytes]) -> bytes:
@@ -33,7 +64,7 @@ def scrub_input(v: Union[str, bytes]) -> bytes:
 
 
 def b58encode_int(
-    i: int, default_one: bool = True, alphabet: bytes = BITCOIN_ALPHABET
+        i: int, default_one: bool = True, alphabet: bytes = BITCOIN_ALPHABET
 ) -> bytes:
     """
     Encode an integer using Base58
@@ -44,12 +75,12 @@ def b58encode_int(
     base = len(alphabet)
     while i:
         i, idx = divmod(i, base)
-        string = alphabet[idx:idx+1] + string
+        string = alphabet[idx:idx + 1] + string
     return string
 
 
 def b58encode(
-    v: Union[str, bytes], alphabet: bytes = BITCOIN_ALPHABET
+        v: Union[str, bytes], alphabet: bytes = BITCOIN_ALPHABET
 ) -> bytes:
     """
     Encode a string using Base58
@@ -83,8 +114,8 @@ def _get_base58_decode_map(alphabet: bytes,
 
 
 def b58decode_int(
-    v: Union[str, bytes], alphabet: bytes = BITCOIN_ALPHABET, *,
-    autofix: bool = False
+        v: Union[str, bytes], alphabet: bytes = BITCOIN_ALPHABET, *,
+        autofix: bool = False
 ) -> int:
     """
     Decode a Base58 encoded string as an integer
@@ -108,8 +139,8 @@ def b58decode_int(
 
 
 def b58decode(
-    v: Union[str, bytes], alphabet: bytes = BITCOIN_ALPHABET, *,
-    autofix: bool = False
+        v: Union[str, bytes], alphabet: bytes = BITCOIN_ALPHABET, *,
+        autofix: bool = False
 ) -> bytes:
     """
     Decode a Base58 encoded string
@@ -132,7 +163,7 @@ def b58decode(
 
 
 def b58encode_check(
-    v: Union[str, bytes], alphabet: bytes = BITCOIN_ALPHABET
+        v: Union[str, bytes], alphabet: bytes = BITCOIN_ALPHABET
 ) -> bytes:
     """
     Encode a string using Base58 with a 4 character checksum
@@ -144,10 +175,10 @@ def b58encode_check(
 
 
 def b58decode_check(
-    v: Union[str, bytes], alphabet: bytes = BITCOIN_ALPHABET, *,
-    autofix: bool = False
+        v: Union[str, bytes], alphabet: bytes = BITCOIN_ALPHABET, *,
+        autofix: bool = False
 ) -> bytes:
-    '''Decode and verify the checksum of a Base58 encoded string'''
+    """Decode and verify the checksum of a Base58 encoded string"""
 
     result = b58decode(v, alphabet=alphabet, autofix=autofix)
     result, check = result[:-4], result[-4:]

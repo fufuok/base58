@@ -2,6 +2,7 @@
 # ============
 /.venv/
 /.venv2/
+/venvw/
 
 # PyCharm/IDEA IDE files
 /.idea/

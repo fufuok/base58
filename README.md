@@ -1,5 +1,17 @@
 # base58
 
+*forked from keis/base58*
+
+## 改变
+
+- 增加了任意数据类型 (建议 `bytes` 和 `str`) 的加解密助手函数: `b58ec` `b58dc`
+- 加密结果为字符串, 第 1 位表示源数据类型:
+  - 第 1 位 `i` 表示源数据为 `int` 自然数 `>=0`, 解密后为 `int`
+  - 第 1 位 `b` 表示源数据为 `bytes`, 解密后即为 `bytes`
+  - 第 1 位 `s` 表示源数据为 `str` 或其他类型, 被 `str(data)` 的数据, 解密后返回 `str`
+- 加密结果[1:]即为标准 `base58`
+- 示例见: [test_b58.py](test_b58.py)
+
 [![PyPI Version][pypi-image]](https://pypi.python.org/pypi?name=base58&:action=display)
 [![PyPI Downloads][pypi-downloads-image]](https://pypi.python.org/pypi?name=base58&:action=display)
 [![Build Status][travis-image]](https://travis-ci.org/keis/base58)
@@ -16,13 +28,13 @@ will remain supported but no new features will be added.
 
     $ printf "hello world" | base58
     StV1DL6CwTryKyV
-
+    
     $ printf "hello world" | base58 -c
     3vQB7B6MrGQZaxCuFg4oh
-
+    
     $ printf "3vQB7B6MrGQZaxCuFg4oh" | base58 -dc
     hello world
-
+    
     $ printf "4vQB7B6MrGQZaxCuFg4oh" | base58 -dc
     Invalid checksum
 
